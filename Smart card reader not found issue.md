@@ -1,4 +1,4 @@
-Although the `lsusb` command listed the smart card reader device but the middle-ware application that have to mediate between the browser plugin and the hardware device didn't find it. 
+Although the `lsusb` command listed the smart card reader device, the middleware application that have to mediate between the browser plugin and the hardware device didn't find it. 
 
 To resolve the issue follow these steps:
 
