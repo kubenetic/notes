@@ -100,28 +100,40 @@ openssl x509 -in root_ca.crt -text -noout
 
 ## Generate Intermediate CA
 
-I generated the private key for the intermedate ca with the same command as I did with the root ca.
+I generated the private key for the intermedate ca with the same command as I did with the root CA. Then generate and
+sign the certificate for the key in one command.
 
 ```bash
 openssl genrsa -out intermediate_ca.key 4096
+openssl req -nodes \
+       -CA root_ca.crt -CAkey root_ca.key \ 
+       -newkey rsa:4096 -keyout intermediate_ca.key \
+       -x509 -days 3650  \
+       -subj '/C=BE/ST=Belgium/L=Bruxelles/O=Kubenetic/CN=IntermediateCA/emailAddress=info@kubenetic.eu' \
+       -out intermediate_ca.crt
 ```
-
-After that I created a CSR for this key and used a config file also as I did when I generated the root ca. The only
-parameter I changed the value of the _CN_. I used the command below.
-
-```bash
-openssl req -new -key intermediate_ca.key -out intermediate_ca.csr -config intermediate_ca.cnf
-```
-
-And last, I had to sign the key with the `root_ca.key` and produce the public key based on the CSR.
-
-```bash
-openssl x509 -req -days 3650 -in intermediate_ca.csr -signkey root_ca.key -out intermediate_ca.crt
-```
-
-And voila, I got my intermediate keypair which I could use to sign the server TLS keypairs. 
 
 ## Generate server TLS keypairs
 
-The method is just the same as I did here with the intermediate CA. I had to generate a key, then a CSR and sign it, 
-but now not with the `root_ca.key` rather with `intermediate_ca.key`.
+The method is just the same as I did here with the intermediate CA. In case of you want to add _subject alternative
+names_ you can do it with the following command:
+
+```bash
+openssl req -nodes \
+    -newkey rsa:2048 \
+    -CA intermediate_ca.crt -CAkey intermediate_ca.key \
+    -keyout sonar/server.key \
+    -x509 -days 365 \
+    -subj '/C=BE/ST=Belgium/L=Bruxelles/O=Kubenetic/CN=sonar.kubenetic.home/emailAddress=info@kubenetic.eu' \
+    -addext 'subjectAltName = DNS:service, DNS:service.home.arpa \
+    -out sonar/server.crt 
+```
+
+## Read more on topic:
+
+* [Alternative subject names](https://security.stackexchange.com/questions/74345/provide-subjectaltname-to-openssl-directly-on-the-command-line)
+* [OpenSSL essetials by DigitalOcean](https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs)
+* [OpenSSL cheatsheet](https://www.golinuxcloud.com/openssl-cheatsheet/)
+
+
+
