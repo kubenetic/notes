@@ -25,6 +25,8 @@ Current DNS Server: 1.1.1.1
         DNS Domain: home.arpa
 ```
 
+## With CLI
+
 So my system got the list of the nameservers from the DHCP server (pfSense), but I didn't know why it started to use the
 DNS server of Cloudflare. 
 
@@ -37,5 +39,17 @@ nmcli connection modify <name of the connection> ipv4.dns '192.168.1.100'
 nmcli connection down <name of the connection>
 nmcli connection up <name of the connection>
 ```
+
+## With config file
+
+I put the settings above into a config file on path `/etc/systemd/resolved.conf.d/dns_servers.conf`.
+
+```text
+[Resolve]
+DNS=10.22.8.253
+FallbackDNS=1.1.1.1
+```
+
+After this only a restart was needed for the `systemd-resolved` service.
 
 And voila. The DNS resolution issue flied away :-)
